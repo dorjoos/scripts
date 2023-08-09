@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Intercept Requests</title>
+</head>
+<body>
+  <h1>Intercepted Network Requests</h1>
+  <b id="url"></b>
+  <ul id="requestList"></ul>
+  <div id="flagContent"></div>
+
+  <script>
+    // Function to display the intercepted request on the page
+    function displayRequest(url) {
+      const requestList = document.getElementById('requestList');
+      const listItem = document.createElement('li');
+      listItem.textContent = url;
+      requestList.appendChild(listItem);
+    }
+
+    // Function to fetch the flag from the server
+    async function fetchFlag(x) {
+      try {
+        const response = await fetch(x); // Make a GET request to the server
+
+        if (response.ok) {
+          const flagText = await response.text();
+          const flagContentDiv = document.getElementById('flagContent');
+          flagContentDiv.textContent = 'Flag Content: ' + flagText;
+        } else {
+          const flagContentDiv = document.getElementById('flagContent');
+          flagContentDiv.textContent = 'Flag Content: ' + "not found";
+        }
+      } catch (error) {
+        const flagContentDiv = document.getElementById('flagContent');
+        flagContentDiv.textContent = 'Flag Content: ' + "not found 2nd";
+      }
+    }
+    document.getElementById('url').textContent = document.URL;
+    // Intercept XMLHttpRequest requests and log them to the console
+    XMLHttpRequest.prototype.realSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function(value) {
+      const self = this;
+      this.addEventListener('load', function() {
+        console.log('Intercepted request:', self.responseURL);
+        displayRequest(self.responseURL); // Display the intercepted request on the page
+      }, false);
+      this.realSend(value);
+      fetchFlag(self.responseURL);
+    };
+
+    // Call the function to fetch the flag when the page loads
+    
+  </script>
+</body>
+</html>
